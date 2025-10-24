@@ -69,7 +69,15 @@ def load_hyperspectral_image(path):
             for wl in src.descriptions:
                 wavelengths.append(float(wl.split(" ")[0]))
     else:
-        raise ValueError(f"Unsupported file format: {ext}")
+        try:
+            with rasterio.open(path) as src:
+                data = src.read()  # (bands, height, width)
+                data[data >= 1] = np.nan  # Handle no-data values
+                wavelengths = []
+                for wl in src.descriptions:
+                    wavelengths.append(float(wl.split(" ")[0]))
+        except Exception:
+            raise ValueError(f"Unsupported file format: {ext}")
     return data, wavelengths
 
 
